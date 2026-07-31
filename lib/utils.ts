@@ -50,6 +50,22 @@ export function formatRuntime(minutes?: number) {
   return `${h}h ${m}m`;
 }
 
+export function slugify(text: string) {
+  if (!text || typeof text !== "string") return "";
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export function detailsUrl(mediaType: string, id: number | string, title?: string) {
+  const slug = slugify(title || "");
+  const path = slug ? `${id}-${slug}` : String(id);
+  return `/details/${mediaType}/${path}`;
+}
+
 export const RAINBOW_COLORS = [
   "#ff3ea5",
   "#ff8a3d",

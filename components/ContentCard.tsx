@@ -7,6 +7,8 @@ import { Star } from "lucide-react";
 import { ContentItem, img } from "@/lib/tmdb";
 import { openSmartlink } from "@/lib/ads";
 
+import { detailsUrl } from "@/lib/utils";
+
 export default function ContentCard({
   item,
   index = 0,
@@ -29,7 +31,7 @@ export default function ContentCard({
   const handleClick = () => {
     // Smartlink background mein khulega, content page current tab mein
     openSmartlink();
-    router.push(`/details/${item.mediaType}/${item.id}`);
+    router.push(detailsUrl(item.mediaType, item.id, item.title));
   };
 
   return (

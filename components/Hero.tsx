@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Play, Info, Star } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ContentItem, img } from "@/lib/tmdb";
+import { detailsUrl } from "@/lib/utils";
 
 export default function Hero({ items }: { items: ContentItem[] }) {
   const [active, setActive] = useState(0);
@@ -101,7 +102,7 @@ export default function Hero({ items }: { items: ContentItem[] }) {
                   <Play size={16} fill="black" /> Play
                 </motion.span>
               </Link>
-              <Link href={`/details/${item.mediaType}/${item.id}`}>
+              <Link href={detailsUrl(item.mediaType, item.id, item.title)}>
                 <motion.span
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.93 }}

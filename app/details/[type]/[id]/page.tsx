@@ -58,9 +58,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const mediaType = params.type as MediaType;
   if (mediaType !== "movie" && mediaType !== "tv") return {};
+  const numericId = params.id.split("-")[0];
 
   try {
-    const data = await getDetails(mediaType, params.id);
+    const data = await getDetails(mediaType, numericId);
     if (!data || data.success === false) return {};
 
     const title = data.title || data.name;
@@ -101,9 +102,11 @@ export default async function DetailsPage({
   const mediaType = params.type as MediaType;
   if (mediaType !== "movie" && mediaType !== "tv") notFound();
 
+  const numericId = params.id.split("-")[0];
+
   let data: any;
   try {
-    data = await getDetails(mediaType, params.id);
+    data = await getDetails(mediaType, numericId);
   } catch {
     notFound();
   }
