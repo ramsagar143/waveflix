@@ -1,0 +1,242 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: "Clash", "Sora", sans-serif;
+  --font-body: "Sora", sans-serif;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #8b5cf6 transparent;
+}
+
+::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #ff3ea5, #4f7dff);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html,
+body {
+  background-color: #07070c;
+  color: #f4f2ff;
+  overscroll-behavior-y: none;
+}
+
+body {
+  font-family: var(--font-body);
+  position: relative;
+}
+
+/* ---------- Rainbow wave background used behind hero / section headers ---------- */
+.wave-bg {
+  position: relative;
+  overflow: hidden;
+}
+.wave-bg::before {
+  content: "";
+  position: absolute;
+  inset: -40% -10%;
+  background: conic-gradient(
+    from 0deg,
+    #ff3ea5,
+    #ff8a3d,
+    #ffd23d,
+    #3ddc84,
+    #22e2d6,
+    #4f7dff,
+    #8b5cf6,
+    #ff3ea5
+  );
+  filter: blur(90px) saturate(130%);
+  opacity: 0.25;
+  animation: spin 22s linear infinite;
+  z-index: 0;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- Card glow / wave hover ---------- */
+.card-glow {
+  position: relative;
+  isolation: isolate;
+}
+.card-glow::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  padding: 2px;
+  background: linear-gradient(
+    120deg,
+    #ff3ea5,
+    #ff8a3d,
+    #ffd23d,
+    #3ddc84,
+    #22e2d6,
+    #4f7dff,
+    #8b5cf6,
+    #ff3ea5
+  );
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.35s ease;
+  z-index: -1;
+  animation: wave-flow 5s linear infinite;
+}
+.card-glow:focus-within::before {
+  opacity: 1;
+}
+.card-hover {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* Hover-lift only for devices that truly support hover (mouse/trackpad).
+   Gating this behind (hover: hover) stops touchscreens from getting stuck
+   in a simulated ":hover" state on tap — the classic mobile bug where the
+   card visibly shifts on the first tap and the link needs a second tap. */
+@media (hover: hover) and (pointer: fine) {
+  .card-glow:hover::before {
+    opacity: 1;
+  }
+  .card-hover:hover {
+    transform: translateY(-6px) scale(1.03);
+  }
+}
+
+/* While a row is being drag-scrolled, the cursor sweeps across many cards
+   in a single motion. Letting each one fire its :hover lift + transition
+   mid-drag is what made the slider feel "glitchy" / low-FPS — every card
+   the pointer crossed was doing its own transform transition at the same
+   time the row was being scrolled. Suppress that while .dragging is set. */
+.dragging .card-hover {
+  transition: none !important;
+  transform: none !important;
+}
+.dragging .card-glow::before {
+  opacity: 0 !important;
+}
+
+/* Always-on rotating rainbow glow, used for OTT platform logo cards where
+   the glow itself is part of the feature (not just a hover affordance). */
+.ott-glow {
+  position: relative;
+  isolation: isolate;
+}
+.ott-glow::before {
+  content: "";
+  position: absolute;
+  inset: -3px;
+  border-radius: 22px;
+  padding: 2.5px;
+  background: linear-gradient(
+    120deg,
+    #ff3ea5,
+    #ff8a3d,
+    #ffd23d,
+    #3ddc84,
+    #22e2d6,
+    #4f7dff,
+    #8b5cf6,
+    #ff3ea5
+  );
+  background-size: 300% 300%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.65;
+  filter: blur(0.5px);
+  transition: opacity 0.35s ease;
+  z-index: -1;
+  animation: wave-flow 5s linear infinite;
+}
+.dragging .ott-glow::before {
+  opacity: 0.65 !important;
+}
+@media (hover: hover) and (pointer: fine) {
+  .ott-glow:hover::before {
+    opacity: 1;
+  }
+}
+
+/* soft ambient glow blob */
+.glow-blob {
+  position: absolute;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.55), transparent 70%);
+  filter: blur(40px);
+}
+
+/* rainbow underline for active tabs */
+.rainbow-underline {
+  background: linear-gradient(
+    90deg,
+    #ff3ea5,
+    #ff8a3d,
+    #ffd23d,
+    #3ddc84,
+    #22e2d6,
+    #4f7dff,
+    #8b5cf6
+  );
+  background-size: 200% 100%;
+  animation: wave-flow 4s linear infinite;
+}
+
+/* text gradient */
+.text-rainbow {
+  background: linear-gradient(90deg, #ff3ea5, #ffd23d, #3ddc84, #4f7dff, #8b5cf6);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wave-flow 6s linear infinite;
+}
+
+/* shimmer skeleton */
+.skeleton {
+  background: linear-gradient(90deg, #14141f 25%, #1e1e30 37%, #14141f 63%);
+  background-size: 500px 100%;
+  animation: shimmer 1.6s linear infinite;
+}
+
+/* Hide scrollbar for horizontal sliders but keep functionality */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* focus visibility for accessibility */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #22e2d6;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
