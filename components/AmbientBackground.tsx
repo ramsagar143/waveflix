@@ -3,24 +3,31 @@
 export default function AmbientBackground() {
   return (
     <div className="fixed inset-0 -z-10 overflow-hidden bg-base-900">
-      {/* base gradient wash */}
+      {/* base gradient wash — static, no animation needed */}
       <div className="absolute inset-0 bg-rainbow-radial" />
 
-      {/* animated glow blobs */}
+      {/* animated glow blobs — GPU-promoted via will-change (set in CSS).
+          Only 2 blobs instead of 3 to reduce composited layer count.
+          animation-fill-mode: both ensures no flash before/after. */}
       <div className="glow-blob w-[420px] h-[420px] -top-24 -left-24 animate-glow-pulse" />
       <div
-        className="glow-blob w-[360px] h-[360px] top-1/3 -right-20 animate-glow-pulse"
-        style={{ animationDelay: "1.2s", background: "radial-gradient(circle, rgba(34,226,214,0.4), transparent 70%)" }}
-      />
-      <div
-        className="glow-blob w-[300px] h-[300px] bottom-0 left-1/4 animate-glow-pulse"
-        style={{ animationDelay: "2s", background: "radial-gradient(circle, rgba(255,62,165,0.35), transparent 70%)" }}
+        className="glow-blob w-[340px] h-[340px] top-1/3 -right-16 animate-glow-pulse"
+        style={{
+          animationDelay: "1.4s",
+          background: "radial-gradient(circle, rgba(34,226,214,0.38), transparent 70%)",
+        }}
       />
 
-      {/* animated wave lines at bottom */}
+      {/* Animated wave — width 150% instead of 200% (less off-screen pixels
+          to composite), opacity lowered to further reduce GPU fill cost. */}
       <svg
-        className="absolute bottom-0 left-0 w-[200%] opacity-20 animate-wave-flow"
-        style={{ animationDuration: "18s" }}
+        className="absolute bottom-0 left-0 w-[150%] opacity-15 animate-wave-flow"
+        style={{
+          animationDuration: "20s",
+          /* Promote SVG to its own compositor layer */
+          willChange: "transform",
+          transform: "translateZ(0)",
+        }}
         viewBox="0 0 2800 200"
         preserveAspectRatio="none"
         xmlns="http://www.w3.org/2000/svg"
@@ -40,9 +47,9 @@ export default function AmbientBackground() {
         />
       </svg>
 
-      {/* subtle grid overlay for texture */}
+      {/* subtle grid overlay for texture — static, no GPU cost */}
       <div
-        className="absolute inset-0 opacity-[0.035]"
+        className="absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage:
             "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",

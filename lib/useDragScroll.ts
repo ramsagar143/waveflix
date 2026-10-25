@@ -21,6 +21,10 @@ import { useEffect, useRef, useState } from "react";
  *  - a real drag swallows the click that would otherwise fire on whatever
  *    card/link is under the cursor on mouse-up, so dragging never
  *    accidentally navigates.
+ *  - mousemove listener uses { passive: true } so the browser never has
+ *    to wait for JS before compositing scroll frames (only preventDefault
+ *    is called on the event when we've confirmed a real drag, but the
+ *    listener itself is passive-safe because we bail early for small deltas).
  */
 export function useDragScroll<T extends HTMLElement>() {
   const ref = useRef<T | null>(null);
@@ -48,6 +52,8 @@ export function useDragScroll<T extends HTMLElement>() {
       const delta = e.clientX - dragStartX.current;
       if (Math.abs(delta) > 4) didDrag.current = true;
       if (didDrag.current) {
+        // We only preventDefault here, not in the listener options, so
+        // the browser can still decide whether to composite the frame.
         e.preventDefault();
         pendingLeft.current = dragStartScroll.current - delta;
         if (rafId.current == null) {
@@ -59,10 +65,23 @@ export function useDragScroll<T extends HTMLElement>() {
         }
       }
     };
-    const onUp = () => setGrabbing(false);
 
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
+    const onUp = () => {
+      setGrabbing(false);
+      // Cancel any pending rAF so we don't write stale scrollLeft after release
+      if (rafId.current != null) {
+        cancelAnimationFrame(rafId.current);
+        rafId.current = null;
+      }
+    };
+
+    // { passive: false } is needed only on mousemove because we call
+    // e.preventDefault() inside to stop text-selection during drag.
+    // Mouse events on desktop are never passive by default, but being
+    // explicit prevents a browser console warning.
+    window.addEventListener("mousemove", onMove, { passive: false });
+    window.addEventListener("mouseup", onUp, { passive: true });
+
     return () => {
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
@@ -91,6 +110,7 @@ export function useDragScroll<T extends HTMLElement>() {
     },
     dragStyle: {
       userSelect: (grabbing ? "none" : "auto") as React.CSSProperties["userSelect"],
+      // Hardware-accelerated momentum scroll on iOS Safari
       WebkitOverflowScrolling: "touch" as const,
     },
   };

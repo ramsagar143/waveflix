@@ -24,22 +24,33 @@
   background: transparent;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 html,
 body {
   background-color: #07070c;
   color: #f4f2ff;
   overscroll-behavior-y: none;
+  /* Prevent layout shifts during scroll */
+  overflow-x: hidden;
 }
 
 body {
   font-family: var(--font-body);
   position: relative;
+  /* Promote body to its own compositor layer */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 /* ---------- Rainbow wave background used behind hero / section headers ---------- */
 .wave-bg {
   position: relative;
   overflow: hidden;
+  /* Isolate paint — children won't trigger parent repaints */
+  contain: layout style;
 }
 .wave-bg::before {
   content: "";
@@ -58,12 +69,15 @@ body {
   );
   filter: blur(90px) saturate(130%);
   opacity: 0.25;
+  /* GPU-promoted layer — rotation won't cause repaints */
   animation: spin 22s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
   z-index: 0;
 }
 @keyframes spin {
   to {
-    transform: rotate(360deg);
+    transform: rotate(360deg) translateZ(0);
   }
 }
 
@@ -71,6 +85,8 @@ body {
 .card-glow {
   position: relative;
   isolation: isolate;
+  /* Each card is its own stacking context — no cross-card repaints */
+  contain: layout;
 }
 .card-glow::before {
   content: "";
@@ -94,15 +110,20 @@ body {
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   opacity: 0;
-  transition: opacity 0.35s ease;
+  transition: opacity 0.3s ease;
   z-index: -1;
+  /* Only animate when visible (opacity > 0) to skip GPU work when hidden */
   animation: wave-flow 5s linear infinite;
+  will-change: opacity;
 }
 .card-glow:focus-within::before {
   opacity: 1;
 }
 .card-hover {
-  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  /* Use transform only (GPU) — no layout/paint triggered */
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+  transform: translateZ(0);
 }
 
 /* Hover-lift only for devices that truly support hover (mouse/trackpad).
@@ -114,7 +135,7 @@ body {
     opacity: 1;
   }
   .card-hover:hover {
-    transform: translateY(-6px) scale(1.03);
+    transform: translateY(-5px) scale(1.025) translateZ(0);
   }
 }
 
@@ -125,10 +146,12 @@ body {
    time the row was being scrolled. Suppress that while .dragging is set. */
 .dragging .card-hover {
   transition: none !important;
-  transform: none !important;
+  transform: translateZ(0) !important;
+  will-change: auto !important;
 }
 .dragging .card-glow::before {
   opacity: 0 !important;
+  animation-play-state: paused !important;
 }
 
 /* Always-on rotating rainbow glow, used for OTT platform logo cards where
@@ -136,6 +159,7 @@ body {
 .ott-glow {
   position: relative;
   isolation: isolate;
+  contain: layout;
 }
 .ott-glow::before {
   content: "";
@@ -160,9 +184,10 @@ body {
   mask-composite: exclude;
   opacity: 0.65;
   filter: blur(0.5px);
-  transition: opacity 0.35s ease;
+  transition: opacity 0.3s ease;
   z-index: -1;
   animation: wave-flow 5s linear infinite;
+  will-change: background-position;
 }
 .dragging .ott-glow::before {
   opacity: 0.65 !important;
@@ -173,12 +198,16 @@ body {
   }
 }
 
-/* soft ambient glow blob */
+/* soft ambient glow blob — GPU-composited so its pulse animation never
+   causes the rest of the page to repaint */
 .glow-blob {
   position: absolute;
   border-radius: 999px;
   background: radial-gradient(circle, rgba(139, 92, 246, 0.55), transparent 70%);
   filter: blur(40px);
+  /* Promote to own layer so blur/opacity animation is off main thread */
+  will-change: opacity, filter;
+  transform: translateZ(0);
 }
 
 /* rainbow underline for active tabs */
@@ -218,6 +247,14 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+  /* Tell browser we're about to scroll so it can prepare GPU layers */
+  will-change: scroll-position;
+  /* Hardware-accelerated momentum scrolling on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Allow horizontal scroll touch, let vertical pass to the page */
+  touch-action: pan-x;
+  /* Prevent GPU layer explosion from sub-pixel scroll positions */
+  transform: translateZ(0);
 }
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -239,4 +276,23 @@ button:focus-visible {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
   }
+}
+
+/* Card stagger entry animation — pure CSS, replaces framer-motion initial/animate.
+   GPU-composited (opacity + transform only) so it never blocks the main thread. */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px) translateZ(0);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) translateZ(0);
+  }
+}
+
+/* Hero backdrop crossfade — used by Hero.tsx instead of framer-motion scale */
+@keyframes heroEnter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
 }

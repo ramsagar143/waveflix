@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import { ContentItem } from "@/lib/tmdb";
 import { useDragScroll } from "@/lib/useDragScroll";
@@ -49,32 +48,28 @@ export default function ContentRow({
         <div className="flex items-center gap-2">
           {viewAllHref && (
             <Link href={viewAllHref}>
-              <motion.span
-                whileHover={{ x: 3 }}
-                whileTap={{ scale: 0.94 }}
-                className="hidden sm:flex items-center gap-1 text-xs md:text-sm font-semibold text-white/60 hover:text-white transition-colors"
-              >
+              {/* Plain anchor — no framer-motion wrapper needed for a simple link */}
+              <span className="hidden sm:flex items-center gap-1 text-xs md:text-sm font-semibold text-white/60 hover:text-white transition-colors duration-200">
                 View All <ArrowRight size={14} />
-              </motion.span>
+              </span>
             </Link>
           )}
           <div className="hidden md:flex items-center gap-1.5">
-            <motion.button
-              whileTap={{ scale: 0.85 }}
+            {/* CSS-only active:scale instead of framer-motion whileTap */}
+            <button
               onClick={() => scroll(-1)}
               aria-label="Scroll left"
-              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-colors"
+              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 active:scale-90 transition-[colors,transform] duration-150"
             >
               <ChevronLeft size={16} />
-            </motion.button>
-            <motion.button
-              whileTap={{ scale: 0.85 }}
+            </button>
+            <button
               onClick={() => scroll(1)}
               aria-label="Scroll right"
-              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 transition-colors"
+              className="w-8 h-8 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-white/60 hover:text-white hover:border-white/30 active:scale-90 transition-[colors,transform] duration-150"
             >
               <ChevronRight size={16} />
-            </motion.button>
+            </button>
           </div>
         </div>
       </div>
@@ -85,7 +80,13 @@ export default function ContentRow({
         className={`flex items-start gap-2.5 md:gap-3.5 overflow-x-auto overflow-y-hidden no-scrollbar px-4 md:px-8 pt-4 pb-5 md:pt-5 md:pb-6 md:cursor-grab ${
           grabbing ? "dragging md:cursor-grabbing" : ""
         }`}
-        style={dragStyle}
+        style={{
+          ...dragStyle,
+          /* Scroll container gets its own compositor layer so scroll
+             position updates don't trigger repaints on the rest of the page */
+          willChange: "scroll-position",
+          contain: "layout style" as React.CSSProperties["contain"],
+        }}
       >
         {items.map((item, i) => (
           <ContentCard key={`${item.mediaType}-${item.id}`} item={item} index={i} />
@@ -95,12 +96,9 @@ export default function ContentRow({
       {viewAllHref && (
         <div className="sm:hidden px-4 mt-3">
           <Link href={viewAllHref}>
-            <motion.span
-              whileTap={{ scale: 0.96 }}
-              className="flex items-center justify-center gap-1 text-xs font-semibold text-white/70 border border-white/10 rounded-full py-2"
-            >
+            <span className="flex items-center justify-center gap-1 text-xs font-semibold text-white/70 border border-white/10 rounded-full py-2 active:scale-[0.97] transition-transform duration-150">
               View All <ArrowRight size={13} />
-            </motion.span>
+            </span>
           </Link>
         </div>
       )}

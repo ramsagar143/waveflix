@@ -26,11 +26,14 @@ export default function Hero({ items }: { items: ContentItem[] }) {
       <AnimatePresence mode="wait">
         <motion.div
           key={item.id}
-          initial={{ opacity: 0, scale: 1.08 }}
-          animate={{ opacity: 1, scale: 1 }}
+          /* Removed scale(1.08) initial — scaling a full-viewport image creates
+             a massive composited layer. Simple opacity crossfade is GPU-cheap. */
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.7, ease: "easeInOut" }}
           className="absolute inset-0"
+          style={{ willChange: "opacity" }}
         >
           <SafeImage
             src={img.backdrop(item.backdropPath, "w1280")}
@@ -49,7 +52,7 @@ export default function Hero({ items }: { items: ContentItem[] }) {
       {/* animated wave divider at bottom of hero */}
       <svg
         className="absolute bottom-0 left-0 w-[200%] animate-wave-flow opacity-70"
-        style={{ animationDuration: "14s" }}
+        style={{ animationDuration: "14s", willChange: "transform", transform: "translateZ(0)" }}
         viewBox="0 0 2800 80"
         preserveAspectRatio="none"
       >
@@ -72,10 +75,11 @@ export default function Hero({ items }: { items: ContentItem[] }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={item.id + "-copy"}
-            initial={{ opacity: 0, y: 24 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            style={{ willChange: "opacity, transform" }}
           >
             <div className="flex items-center gap-2 mb-3">
               <span className="text-[11px] font-bold tracking-widest uppercase px-2.5 py-1 rounded-full bg-white/10 border border-white/10 text-neon-cyan">
@@ -95,18 +99,20 @@ export default function Hero({ items }: { items: ContentItem[] }) {
             <div className="flex items-center gap-3">
               <Link href={`/watch/${item.mediaType}/${item.id}`}>
                 <motion.span
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.94 }}
                   className="flex items-center gap-2 bg-white text-black font-bold px-5 py-3 rounded-full text-sm shadow-lg shadow-white/10"
+                  style={{ willChange: "transform" }}
                 >
                   <Play size={16} fill="black" /> Play
                 </motion.span>
               </Link>
               <Link href={detailsUrl(item.mediaType, item.id, item.title)}>
                 <motion.span
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.04 }}
+                  whileTap={{ scale: 0.94 }}
                   className="flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white font-semibold px-5 py-3 rounded-full text-sm"
+                  style={{ willChange: "transform" }}
                 >
                   <Info size={16} /> Details
                 </motion.span>
@@ -123,7 +129,7 @@ export default function Hero({ items }: { items: ContentItem[] }) {
               onClick={() => setActive(i)}
               aria-label={`Show featured item ${i + 1}`}
               className="relative h-1.5 rounded-full overflow-hidden bg-white/15"
-              style={{ width: i === active ? 28 : 14, transition: "width .4s ease" }}
+              style={{ width: i === active ? 28 : 14, transition: "width .35s ease" }}
             >
               {i === active && (
                 <motion.div

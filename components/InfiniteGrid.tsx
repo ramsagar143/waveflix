@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { motion } from "framer-motion";
 import { ContentItem } from "@/lib/tmdb";
 import ContentCard from "./ContentCard";
 import BannerAd from "./BannerAd";
@@ -101,6 +100,10 @@ export default function InfiniteGrid({
         const baseIndex = chunkIndex * CHUNK_SIZE;
         return (
           <div key={`chunk-${chunkIndex}`}>
+            {/* Pure CSS grid — no framer-motion wrapper per card.
+                ContentCard handles its own staggered CSS entry animation.
+                This eliminates hundreds of IntersectionObserver + JS
+                animation instances that caused jank during scroll. */}
             <div
               className="grid grid-flow-row-dense gap-4 md:gap-5 px-4 md:px-8"
               style={{ gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))" }}
@@ -108,15 +111,7 @@ export default function InfiniteGrid({
               {group.map((item, j) => {
                 const i = baseIndex + j;
                 return (
-                  <motion.div
-                    key={`${item.mediaType}-${item.id}-${i}`}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true, margin: "-30px" }}
-                    transition={{ duration: 0.4, delay: (i % 12) * 0.03 }}
-                  >
-                    <ContentCard item={item} index={i} size="lg" fluid />
-                  </motion.div>
+                  <ContentCard key={`${item.mediaType}-${item.id}-${i}`} item={item} index={i} size="lg" fluid />
                 );
               })}
             </div>
