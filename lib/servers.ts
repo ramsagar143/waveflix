@@ -38,6 +38,16 @@ export const SERVERS: StreamServer[] = [
         ? `https://peachify.pro/embed/movie/${tmdbId}`
         : `https://peachify.pro/embed/tv/${tmdbId}/${season || 1}/${episode || 1}`,
   },
+  {
+    id: "vidly",
+    name: "Vidly",
+    // Movie  → https://vidly.pro/movie/{tmdbId}
+    // TV/Anime → https://vidly.pro/tv/{tmdbId}/{season}/{episode}
+    embedUrl: ({ mediaType, tmdbId, season, episode }) =>
+      mediaType === "movie"
+        ? `https://vidly.pro/movie/${tmdbId}`
+        : `https://vidly.pro/tv/${tmdbId}/${season || 1}/${episode || 1}`,
+  },
 ];
 
 export const DEFAULT_SERVER_ID = SERVERS[0].id;
